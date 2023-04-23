@@ -46,6 +46,18 @@ app.post('/moviesAdd', function(req,res){
     res.end('ok');
 })
 
+app.post('/updateMovie', function(req, res) {
+    const _titulo = req.query.titulo;
+    const _year = req.query.year;
+    const _sinopsis = req.query.sinopsis;
+    const _autor = req.query.autor;
+    const _url = req.query.url; 
+    console.log(_titulo);
+    let db = new sqlite3.Database('./movielist.db');
+    let resultado = db.run(`update movielist set year = ?, sinopsis = ?, autor = ?, url = ? where titulo = ?`, [_year, _sinopsis, _autor, _url, _titulo]);
+    res.end('ok');
+})
+
 //Iniciar el servidor.
 var server = app.listen(8080, function() {
     var host = server.address().address
