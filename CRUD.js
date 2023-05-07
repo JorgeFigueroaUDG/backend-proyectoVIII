@@ -24,6 +24,25 @@ function createDatabase() {
     return true;
 }
 
+//Creando base de datos
+function createDatabaseUsers() {
+    console.log('Creando base de datos');
+
+    let db = new sqlite3.Database('./users.db', (err) => {
+        if(err){
+            console.log("Error: " + err);
+            return false;
+        }else {
+            console.log('Creando base de datos para usuarios');
+            db.exec(`create table users(id int primary key not null, user text not null, password text not null); 
+            insert into users values(1,'jorge@admin.com', '1234'); 
+            `);
+        }
+    });
+    db.close();
+    return true;
+}
+
 //Lectura - READ
 app.get('/movies', function(req,res){
     let db = new sqlite3.Database('./movielist.db');
@@ -32,6 +51,16 @@ app.get('/movies', function(req,res){
         let carroStr = JSON.stringify(rows);
         res.end(carroStr);
     });
+})
+
+//API para obtener usuarios
+app.get('/users', function(req, res) {
+    let db = new sqlite3.Database('./users.db');
+    db.all("SELECT * FROM users ORDER BY id, user", 
+    function(err,rows){
+        let carroStr = JSON.stringify(rows);
+        res.end(carroStr);
+    })
 })
 
 //Agregando nueva info
@@ -76,5 +105,21 @@ var server = app.listen(8080, function() {
             console.log("Despliegue de la base de datos ejecutado con exito");
         }
     });
+
+    let dbUsers = new sqlite3.Database('./users.db', sqlite3.OPEN_READWRITE, (err) => {
+        if(err && err.code == "SQLITE_CANTOPEN") {
+            dbUsers.close();
+            console.log("Iniciando creacion de base de datos");
+            createDatabaseUsers();
+            return;
+        }else if(err){
+            console.log("Error " + err);
+            exit(1);
+        }else {
+            console.log("Despliegue de la base de datos ejecutado con exito");
+        }
+    });
+
+
     console.log('Servidor escuchando en http://%s:%s', host, port);
 })
